@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"image"
 	"log"
+	"sync"
 )
 
 type Solver struct {
 	maze    *image.RGBA
 	pallete pallete
 	pathsToExplore	chan*path
+	solution *path
+	mutex sync.Mutex
 }
 
 // building the solver by opening the image
@@ -34,6 +37,11 @@ func (s *Solver) Solve() error {
 	}
 
 	log.Printf("starting at %v", entrance)
+	
+	// writing in paths to explore before starting the chanel
+	s.pathsToExplore <- &path{previousStep: nil, at: entrance}
+	s.listenToBranches()
+
 	return nil
 }
 
