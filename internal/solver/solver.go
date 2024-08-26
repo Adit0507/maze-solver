@@ -9,6 +9,19 @@ import (
 type Solver struct {
 	maze    *image.RGBA
 	pallete pallete
+	pathsToExplore	chan*path
+}
+
+// building the solver by opening the image
+func New(imagePath string) (*Solver, error) {
+	img, err := openMaze(imagePath)
+	if err != nil {
+		return nil, fmt.Errorf("cannot open maze image: %w", err)
+	}
+
+	return &Solver{
+		maze: img,
+	}, nil
 }
 
 // finds path to the treasure
@@ -33,16 +46,4 @@ func (s *Solver) findEntrance() (image.Point, error) {
 	}
 
 	return image.Point{}, fmt.Errorf("entrance positon not found")
-}
-
-// building the solver by opening the image
-func New(imagePath string) (*Solver, error) {
-	img, err := openMaze(imagePath)
-	if err != nil {
-		return nil, fmt.Errorf("cannot open maze image: %w", err)
-	}
-
-	return &Solver{
-		maze: img,
-	}, nil
 }
