@@ -21,6 +21,8 @@ func New(imagePath string) (*Solver, error) {
 
 	return &Solver{
 		maze: img,
+		pallete: defaultPallete(),
+		pathsToExplore: make(chan *path),
 	}, nil
 }
 
