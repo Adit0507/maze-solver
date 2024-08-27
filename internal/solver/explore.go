@@ -3,12 +3,23 @@ package solver
 import (
 	"image"
 	"log"
+	"sync"
 )
 
 // starts a new goroutine for each message in the channel
 func (s *Solver) listenToBranches() {
+	// adds one tracker to wait group before spinning a new gorutine
+	// goroutine should then tell wait group when it is done with its work
+	wg := sync.WaitGroup{}
+	defer wg.Wait()
+
 	for p := range s.pathsToExplore {
-		go s.explore(p)
+		wg.Add(1)
+		go func (path *path)  {
+			defer wg.Done()
+			s.explore(path)
+		}(p)
+
 		if s.solutionFound() {
 			return
 		}
@@ -19,7 +30,7 @@ func (s *Solver) listenToBranches() {
 func (s *Solver) solutionFound() bool {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
-	return s.solution == nil
+	return s.solution != nil
 }
 
 func (s *Solver) explore(pathToBranch *path) {
