@@ -13,24 +13,20 @@ func (s *Solver) listenToBranches() {
 	wg := sync.WaitGroup{}
 	defer wg.Wait()
 
-	for p := range s.pathsToExplore {
-		wg.Add(1)
-		go func (path *path)  {
-			defer wg.Done()
-			s.explore(path)
-		}(p)
-
-		if s.solutionFound() {
+	for {
+		select {
+		case <-s.quit:
+			log.Println("the treasure has been found, stopping worker")
 			return
+
+		case p := <-s.pathsToExplore:
+			wg.Add(1)
+			go func(p *path) {
+				defer wg.Done()
+				s.explore(p)
+			}(p)
 		}
 	}
-}
-
-// returns whether solution is found or not
-func (s *Solver) solutionFound() bool {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	return s.solution != nil
 }
 
 func (s *Solver) explore(pathToBranch *path) {
@@ -39,8 +35,15 @@ func (s *Solver) explore(pathToBranch *path) {
 	}
 
 	pos := pathToBranch.at
-	for !s.solutionFound() {
+	for {
+		select {
+		case <-s.quit:
+			return
+		default:
+		}
+
 		candidates := make([]image.Point, 0, 3)
+
 		for _, n := range neighbours(pos) {
 			if pathToBranch.isPreviousStep(n) {
 				continue
@@ -50,10 +53,13 @@ func (s *Solver) explore(pathToBranch *path) {
 			case s.pallete.treasure:
 				s.mutex.Lock()
 				defer s.mutex.Unlock()
+
 				if s.solution == nil {
 					s.solution = &path{previousStep: pathToBranch, at: n}
 					log.Printf("Treasure found at %v", s.solution.at)
+					close(s.quit)
 				}
+
 				return
 
 			case s.pallete.path:

@@ -13,6 +13,7 @@ type Solver struct {
 	pathsToExplore chan *path
 	solution       *path
 	mutex          sync.Mutex
+	quit           chan struct{}
 }
 
 // building the solver by opening the image
@@ -23,13 +24,14 @@ func New(imagePath string) (*Solver, error) {
 	}
 
 	return &Solver{
-		maze:           img,
-		pallete:        defaultPallete(),
-					// initialized it with 1, to make it buffered coz 
-					// unbuffered channel cant be read from, as a
-					// send operation on unbuffered channel blokcs the 
-					// sending goroutine until corresponding recevie on the same channel at which point the valueis transmitted & both goroutines continue 
+		maze:    img,
+		pallete: defaultPallete(),
+		// initialized it with 1, to make it buffered coz
+		// unbuffered channel cant be read from, as a
+		// send operation on unbuffered channel blokcs the
+		// sending goroutine until corresponding recevie on the same channel at which point the valueis transmitted & both goroutines continue
 		pathsToExplore: make(chan *path, 1),
+		quit:           make(chan struct{}),
 	}, nil
 }
 
