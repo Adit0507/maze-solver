@@ -9,9 +9,9 @@
 
 <br />
 
-### Maze
+## Maze
 ![maze400_400](https://github.com/user-attachments/assets/158d2635-9338-420f-b3de-dc6df0510777)
 
 
-### Resulting GIF showcasing the route 
+## Resulting GIF showcasing the route 
 ![sol1](https://github.com/user-attachments/assets/9ff83c38-8f4f-4ffe-ac63-f26eae93fae5)
