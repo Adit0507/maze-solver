@@ -3,6 +3,7 @@ package solver
 import (
 	"fmt"
 	"image"
+	"image/gif"
 	"log"
 	"sync"
 )
@@ -14,6 +15,8 @@ type Solver struct {
 	solution       *path
 	mutex          sync.Mutex
 	quit           chan struct{}
+	animation      *gif.GIF
+	exploredPixels	chan image.Point
 }
 
 // building the solver by opening the image
@@ -32,6 +35,8 @@ func New(imagePath string) (*Solver, error) {
 		// sending goroutine until corresponding recevie on the same channel at which point the valueis transmitted & both goroutines continue
 		pathsToExplore: make(chan *path, 1),
 		quit:           make(chan struct{}),
+		exploredPixels: make(chan image.Point),	
+		animation: &gif.GIF{},
 	}, nil
 }
 
