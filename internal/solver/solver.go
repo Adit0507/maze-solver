@@ -50,10 +50,41 @@ func (s *Solver) Solve() error {
 	log.Printf("starting at %v", entrance)
 
 	// writing in paths to explore before starting the chanel
-	s.pathsToExplore <- &path{previousStep: nil, at: entrance}
-	s.listenToBranches()
+	go func ()  {
+		s.pathsToExplore <- &path{previousStep: nil, at: entrance}
+	}()
+
+	wg := sync.WaitGroup{}
+	wg.Add(2)
+
+	go func ()  {
+		defer wg.Done()	
+		s.registerExploredPixels()
+	}()
+
+	go func ()  {
+		defer wg.Done()
+		s.listenToBranches()
+	}()
+
+	wg.Wait()
+
+	s.writeLastFrame()
 
 	return nil
+}
+
+func (s *Solver) writeLastFrame() {
+	stepsFrmTreasure := s.solution
+
+	for stepsFrmTreasure != nil {
+		s.maze.Set(stepsFrmTreasure.at.X, stepsFrmTreasure.at.Y, s.pallete.solution)
+		stepsFrmTreasure = stepsFrmTreasure.previousStep
+	}
+
+	s.drawCurrentFrametoGIF()
+
+	s.animation.Delay[len(s.animation.Delay) -1	]= 300
 }
 
 // finds the one pixel that has entrance color

@@ -36,10 +36,12 @@ func (s *Solver) explore(pathToBranch *path) {
 
 	pos := pathToBranch.at
 	for {
+		s.maze.Set(pos.X, pos.Y, s.pallete.explored)
 		select {
 		case <-s.quit:
 			return
-		default:
+		case s.exploredPixels <- pos:
+			// continue exploration
 		}
 
 		candidates := make([]image.Point, 0, 3)
