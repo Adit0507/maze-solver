@@ -74,7 +74,13 @@ func (s *Solver) explore(pathToBranch *path) {
 
 		for _, candidate := range candidates[1:] {
 			branch := &path{previousStep: pathToBranch, at: candidate}
-			s.pathsToExplore <- branch
+			select {
+			case <- s.quit:
+				log.Printf("I'm an unlucky branch, someone else found the treasure, I give up at position %v.", pos)
+				return
+			case s.pathsToExplore <- branch:
+				// contuinue execution after select block
+			}
 		}
 
 		pathToBranch = &path{previousStep: pathToBranch, at: candidates[0]}
